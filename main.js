@@ -9,64 +9,73 @@ arch.buildGraph = function(system, expandedGroups) {
     // Deep clone system so this doesn't modify original
     system = JSON.parse(JSON.stringify(system));
 
+    var groups = Object.keys(system);
 
     var groupByHiddenSvc = {};
-    for (var i = 0; i < system.length; i++) {
-        var svc = system[i];
-        if (!expandedGroups[svc.group]) { // collapsed / zoomed out
-            groupByHiddenSvc[svc.name] = svc.group;
-        }
-    }
+    groups.forEach(function(group) {
+        system[group].forEach(function(svc) {
+            if (!expandedGroups[group]) { // collapsed / zoomed out
+                groupByHiddenSvc[svc.name] = group;
+            }
+        });
+    });
     console.log(groupByHiddenSvc);
 
     // Update link dests
-    system.forEach(function(svc) {
-        var newConnectsTo = {};
-        svc.connectsTo.forEach(function(dst) {
-            var newTarget = groupByHiddenSvc[dst];
-            if (newTarget) {
-                newConnectsTo[newTarget] = true;
-            } else {
-                newConnectsTo[dst] = true;
+    groups.forEach(function(group) {
+        system[group].forEach(function(svc) {
+            var newConnectsTo = {};
+            if (svc.connectsTo !== undefined) {
+                svc.connectsTo.forEach(function(dst) {
+                    var newTarget = groupByHiddenSvc[dst];
+                    if (newTarget) {
+                        newConnectsTo[newTarget] = true;
+                    } else {
+                        newConnectsTo[dst] = true;
+                    }
+                });
             }
+            svc.connectsTo = Object.keys(newConnectsTo);
         });
-        svc.connectsTo = Object.keys(newConnectsTo);
     });
     console.log(system);
 
     var graph = {};
-    for (var i = 0; i < system.length; i++) {
-        var svc = system[i];
-        if (!expandedGroups[svc.group]) { // collapsed / zoomed out
-            if (!graph[svc.group]) {
-                graph[svc.group] = {
-                    expanded: false,
-                    title: svc.group,
-                    body: svc.name,
-                    connectsTo: {}
-                };
-            } else {
-                graph[svc.group].body += ('\n' + svc.name);
-            }
-            svc.connectsTo.forEach(function(dst) {
-                // Filter out self links
-                if (dst !== svc.group) {
-                    graph[svc.group].connectsTo[dst] = true;
+    // for (var i = 0; i < system.length; i++) {
+        // var svc = system[i];
+    groups.forEach(function(group) {
+        system[group].forEach(function(svc) {
+            if (!expandedGroups[group]) { // collapsed / zoomed out
+                if (!graph[group]) {
+                    graph[group] = {
+                        expanded: false,
+                        title: group,
+                        body: svc.name,
+                        connectsTo: {}
+                    };
+                } else {
+                    graph[group].body += ('\n' + svc.name);
                 }
-            });
-        } else { // expanded group
-            if (!graph[svc.group]) {
-                graph[svc.group] = {
-                    expanded: true,
-                    title: svc.group,
-                    body: '',
-                    services: [svc]
-                };
-            } else {
-                graph[svc.group].services.push(svc);
+                svc.connectsTo.forEach(function(dst) {
+                    // Filter out self links
+                    if (dst !== group) {
+                        graph[group].connectsTo[dst] = true;
+                    }
+                });
+            } else { // expanded group
+                if (!graph[group]) {
+                    graph[group] = {
+                        expanded: true,
+                        title: group,
+                        body: '',
+                        services: [svc]
+                    };
+                } else {
+                    graph[group].services.push(svc);
+                }
             }
-        }
-    }
+        });
+    });
     console.log(graph);
 
     var list = Object.keys(graph).map(function(k) {return graph[k]});
@@ -93,7 +102,8 @@ arch.makeDot = function(graph) {
             dot += 'graph[style=dashed];\n'
             comp.services.forEach(function(svc) {
                 var nodeName = svc.name.replace(/[^\w]/gi, '_');
-                dot += nodeName + ';\n';
+                // TODO escape " in svc.name
+                dot += nodeName + '[label="' + svc.name + '"];\n';
             });
             dot += '}\n';
         } else {
@@ -151,8 +161,12 @@ arch.getParameterByName = function(name) {
 };
 
 window.onload = function() {
-    SYSTEM.forEach(function(svc) {
-        arch.expandedGroups[svc.group] = !!arch.getParameterByName('expand');
+    var SYSTEM = jsyaml.load(SYSTEM_YAML);
+    console.log(SYSTEM);
+
+    var expand = arch.getParameterByName('expand');
+    Object.keys(SYSTEM).forEach(function(group) {
+        arch.expandedGroups[group] = (expand == 'true' || expand == group);
     });
 
     arch.draw(SYSTEM, arch.expandedGroups);
