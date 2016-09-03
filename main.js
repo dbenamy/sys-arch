@@ -140,17 +140,29 @@ arch.draw = function(system, expandedGroups) {
     svgEl.style.height = bbox.height + 40.0 + "px";
 };
 
+// From https://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript
+arch.getParameterByName = function(name) {
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        results = regex.exec(window.location.href);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
+};
+
 window.onload = function() {
+    SYSTEM.forEach(function(svc) {
+        arch.expandedGroups[svc.group] = !!arch.getParameterByName('expand');
+    });
+
     arch.draw(SYSTEM, arch.expandedGroups);
 
-    SYSTEM.forEach(function(svc) {
-        arch.expandedGroups[svc.group] = false;
-    });
     var expander = document.getElementById('expander');
     Object.keys(arch.expandedGroups).forEach(function(group) {
         var checkbox = document.createElement('input');
         checkbox.id = group;
         checkbox.type = 'checkbox';
+        checkbox.checked = arch.expandedGroups[group];
         checkbox.onclick = function(event) {
             arch.expandedGroups[event.target.id] = event.target.checked;
             arch.draw(SYSTEM, arch.expandedGroups);
