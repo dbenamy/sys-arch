@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8">
+
+<style type="text/css">
+    td {
+        vertical-align: top;
+    }
+
+    svg {
+      overflow: hidden;
+    }
+    .node rect {
+      stroke: #333;
+      stroke-width: 1.5px;
+      fill: #fff;
+    }
+    .edgeLabel rect {
+      fill: #fff;
+    }
+    .edgePath {
+      stroke: #333;
+      stroke-width: 1.5px;
+      fill: none;
+    }
+</style>
+
+<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.min.js"></script>
+<script src="http://cpettitt.github.io/project/graphlib-dot/v0.4.10/graphlib-dot.min.js"></script>
+<script src="http://cpettitt.github.io/project/dagre-d3/v0.1.5/dagre-d3.min.js"></script>-->
+
+<!--
+<script src="bower_components/requirejs/require.js"></script>
+<script type="text/javascript">
+    requirejs.config({
+        //By default load any module IDs from ./lib
+        baseUrl: '.',
+        //except, if the module ID starts with "app",
+        //load it from the ./app directory. paths
+        //config is relative to the baseUrl, and
+        //never includes a ".js" extension since
+        //the paths config could be for a directory.
+        paths: {
+            d3: '/bower_components/d3/d3',
+            "dot-checker": '/bower_components/graphviz-d3-renderer/dist/dot-checker',
+            "layout-worker": '/bower_components/graphviz-d3-renderer/dist/layout-worker',
+            worker: '/bower_components/requirejs-web-workers/src/worker',
+            renderer: '/bower_components/graphviz-d3-renderer/dist/renderer'
+        }
+    });
+
+    require(["renderer"],
+      function (renderer) {
+      dotSource = 'digraph xyz {a}';
+      // initialize svg stage
+      renderer.init("#graphContainer");
+
+      // update stage with new dot source
+      renderer.render(dotSource);
+    });
+</script>
+-->
+
+<!--
+<script src="bower_components/d3/d3.js"></script>
+<script src="bower_components/graphviz-d3-renderer/dist/ace-mode.js"></script>
+<script src="bower_components/graphviz-d3-renderer/dist/dot-checker.js"></script>
+<script src="bower_components/graphviz-d3-renderer/dist/layout-worker.js"></script>
+<script src="bower_components/graphviz-d3-renderer/dist/renderer.js"></script>
+<script src="bower_components/viz.js"></script>
+-->
+
+
+<!--<script data-main="app" src="js/bower_components/requirejs/require.js"></script>-->
+
+<script src="viz.js"></script>
+<script src="system.js"></script>
+<script src="main.js"></script>
+
+<body>
+    <table>
+        <tr>
+            <td>
+                Expand Groups:<br/>
+                <div id="expander"></div>
+            </td>
+            <td><svg id="graphContainer"></svg></td>
+        </tr>
+    </table>
+</body>
+
+</html>
