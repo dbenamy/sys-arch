@@ -94,11 +94,6 @@ arch.makeDot = function(graph) {
             comp.services.forEach(function(svc) {
                 var nodeName = svc.name.replace(/[^\w]/gi, '_');
                 dot += nodeName + ';\n';
-                // svc.connectsTo.forEach(function(dst) {
-                //     var nodeName = svc.name.replace(/[^\w]/gi, '_');
-                //     var dstName = dst.replace(/[^\w]/gi, '_');
-                //     dot += nodeName + ' -> ' + dstName + ';\n';
-                // });
             });
             dot += '}\n';
         } else {
@@ -127,18 +122,6 @@ arch.makeDot = function(graph) {
         }
     });
     dot += '}';
-    // {
-    //   node [margin=0 fontcolor=blue fontsize=32 width=0.5 shape=circle style=filled]
-    //   b [fillcolor=yellow fixedsize=true label="a very long label"]
-    //   d [fixedsize=shape label="an even longer label"]
-    // }
-    // a -> {c d}
-    // b -> {c d}
-
-    // return dot;
-    // return 'digraph {\n' +
-    // '    a -> b;\nc' +
-    // '    }';
     return dot;
 };
 
@@ -152,14 +135,6 @@ arch.draw = function(system, expandedGroups) {
     var svgEl = document.getElementById("graphContainer")
     svgEl.innerHTML = svgHtml;
 
-    // var g = graphlibDot.parse(dot);
-    // var renderer = new dagreD3.Renderer();
-
-    // // document.getElementById("graphContainer").innerHTML = '<g/>';
-    // renderer.run(g, d3.select("svg g"));
-
-    // // Optional - resize the SVG element based on the contents.
-    // var svg = document.querySelector('#graphContainer');
     var bbox = svgEl.getBBox();
     svgEl.style.width = bbox.width + 40.0 + "px";
     svgEl.style.height = bbox.height + 40.0 + "px";
@@ -173,7 +148,6 @@ window.onload = function() {
     });
     var expander = document.getElementById('expander');
     Object.keys(arch.expandedGroups).forEach(function(group) {
-        // expander.innerHTML += '<input type="checkbox">' + group + '</input><br/>';
         var checkbox = document.createElement('input');
         checkbox.id = group;
         checkbox.type = 'checkbox';
