@@ -1,11 +1,8 @@
-window.arch = {};
+window.archDraw = {};
 
-// TODO 3rd level of nesting: libraries
-// might want record based nodes for libs
+archDraw.expandedGroups = {};
 
-arch.expandedGroups = {};
-
-arch.buildGraph = function(system, expandedGroups) {
+archDraw.buildGraph = function(system, expandedGroups) {
     // Deep clone system so this doesn't modify original
     system = JSON.parse(JSON.stringify(system));
 
@@ -88,7 +85,7 @@ arch.buildGraph = function(system, expandedGroups) {
     return list;
 };
 
-arch.makeDot = function(graph) {
+archDraw.makeDot = function(graph) {
     // shapes i might want: box, box3d (for multiple), oval, cylinder
 
     var dot = 'digraph {\n';
@@ -135,13 +132,13 @@ arch.makeDot = function(graph) {
     return dot;
 };
 
-arch.draw = function(system, expandedGroups) {
-    var graph = arch.buildGraph(system, expandedGroups);
+archDraw.draw = function(system, expandedGroups) {
+    var graph = archDraw.buildGraph(system, expandedGroups);
     console.log(graph);
-    var dot = arch.makeDot(graph);
+    var dot = archDraw.makeDot(graph);
     console.log(dot);
 
-    var svgHtml = Viz(dot, {format: 'svg'}); //, {engine: 'neato'});
+    var svgHtml = Viz(dot, {format: 'svg'}); //, engine: 'neato'});
     var svgEl = document.getElementById("graphContainer")
     svgEl.innerHTML = svgHtml;
 
@@ -151,7 +148,7 @@ arch.draw = function(system, expandedGroups) {
 };
 
 // From https://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript
-arch.getParameterByName = function(name) {
+archDraw.getParameterByName = function(name) {
     name = name.replace(/[\[\]]/g, "\\$&");
     var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
         results = regex.exec(window.location.href);
@@ -160,26 +157,37 @@ arch.getParameterByName = function(name) {
     return decodeURIComponent(results[2].replace(/\+/g, " "));
 };
 
-window.onload = function() {
-    var SYSTEM = jsyaml.load(SYSTEM_YAML);
-    console.log(SYSTEM);
+archDraw.init = function(system) {
+    var body = document.createElement('body');
+    body.innerHTML = `
+        <table>
+            <tr>
+                <td>
+                    Expand Groups:<br/>
+                    <div id="expander"></div>
+                </td>
+                <td><svg id="graphContainer"></svg></td>
+            </tr>
+        </table>
+    `;
+    document.getElementsByTagName('html')[0].appendChild(body);
 
-    var expand = arch.getParameterByName('expand');
-    Object.keys(SYSTEM).forEach(function(group) {
-        arch.expandedGroups[group] = (expand == 'true' || expand == group);
+    var expand = archDraw.getParameterByName('expand');
+    Object.keys(system).forEach(function(group) {
+        archDraw.expandedGroups[group] = (expand == 'true' || expand == group);
     });
 
-    arch.draw(SYSTEM, arch.expandedGroups);
+    archDraw.draw(system, archDraw.expandedGroups);
 
     var expander = document.getElementById('expander');
-    Object.keys(arch.expandedGroups).forEach(function(group) {
+    Object.keys(archDraw.expandedGroups).sort().forEach(function(group) {
         var checkbox = document.createElement('input');
         checkbox.id = group;
         checkbox.type = 'checkbox';
-        checkbox.checked = arch.expandedGroups[group];
+        checkbox.checked = archDraw.expandedGroups[group];
         checkbox.onclick = function(event) {
-            arch.expandedGroups[event.target.id] = event.target.checked;
-            arch.draw(SYSTEM, arch.expandedGroups);
+            archDraw.expandedGroups[event.target.id] = event.target.checked;
+            archDraw.draw(system, archDraw.expandedGroups);
         };
 
         var label = document.createElement('label');
