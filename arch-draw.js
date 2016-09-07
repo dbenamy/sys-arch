@@ -118,39 +118,54 @@ archDraw.normalizeConnections = function(system) {
     });
 }
 
-archDraw.makeDot = function(graph) {
+archDraw.makeDot = function(groupNodes) {
     // shapes i might want: box, box3d (for multiple), oval, cylinder
 
     var dot = 'digraph {\n';
     dot += 'node [shape=box];\n';
 
-    // Nodes, including subgraphs
-    graph.forEach(function(comp, i) {
-        if (comp.expanded) {
+    groupNodes.forEach(function(grp, i) {
+        if (grp.expanded) {
             dot += 'subgraph cluster_' + i + '{\n';
-            dot += 'label="' + comp.title + '";\n';
+            dot += 'label="' + grp.title + '";\n';
             dot += 'graph[style=dashed];\n'
-            comp.services.forEach(function(svc) {
+            grp.services.forEach(function(svc) {
                 var nodeName = svc.name.replace(/[^\w]/gi, '_');
+                // TODO set labels on services once
                 var label = svc.name;
                 if (svc.description) {
                     label += ': ' + svc.description;
                 }
-                // TODO escape " in svc.name
-                dot += nodeName + '[label="' + svc.name + '"];\n';
+                var shape = 'box';
+                if (svc.shape) {
+                    shape = svc.shape;
+                }
+                dot += (
+                    nodeName + ' [' +
+                    'label="' + label + '", ' + // TODO escape "
+                    'shape="' + shape + '"' + // TODO escape "
+                    '];\n'
+                );
             });
             dot += '}\n';
         } else {
-            var nodeName = comp.title.replace(/[^\w]/gi, '_');
-            // TODO escape " in node text
-            dot += nodeName + ' [style=dashed, label="' + comp.title + '\n-------\n' + comp.body + '"]\n'; // TODO escape "
+            var nodeName = grp.title.replace(/[^\w]/gi, '_');
+            // TODO escape " in label
+            var label = grp.title + '\n-------\n' + grp.body;
+            dot += (
+                nodeName + ' [' +
+                'style=dashed, ' +
+                // 'shape=oval, ' +
+                'label="' + label + '"' +
+                '];\n'
+            );
         }
     });
 
     // Edges
-    graph.forEach(function(comp, i) {
-        if (comp.expanded) {
-            comp.services.forEach(function(svc) {
+    groupNodes.forEach(function(grp, i) {
+        if (grp.expanded) {
+            grp.services.forEach(function(svc) {
                 svc.connectsTo.forEach(function(dst) {
                     var nodeName = svc.name.replace(/[^\w]/gi, '_');
                     var dstName = dst.svc.replace(/[^\w]/gi, '_');
@@ -159,14 +174,15 @@ archDraw.makeDot = function(graph) {
                 });
             });
         } else { // collapsed/zoomed out
-            var nodeName = comp.title.replace(/[^\w]/gi, '_');
-            comp.connectsTo.forEach(function(dst) {
+            var nodeName = grp.title.replace(/[^\w]/gi, '_');
+            grp.connectsTo.forEach(function(dst) {
                 var dstName = dst.svc.replace(/[^\w]/gi, '_');
                 // TODO escape " in reason
                 dot += nodeName + ' -> ' + dstName + ' [label="' + dst.reason + '"];\n';
             });
         }
     });
+
     dot += '}';
     return dot;
 };
