@@ -49,7 +49,7 @@ window.onload = function() {
 
 # TODO
 
-- Optional labels on arrows explaining reason for connection. Make connectsTo entries be able to be 2 items lists of [dst, desc].
+- Look into separating arrows.
 - Highlight arrows on hover.
 - Add optional label field which is shown instead of name if given. i want to keep name to make connections easier.
 - Add optional shape. I want this for dbs.
