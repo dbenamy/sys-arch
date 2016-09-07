@@ -232,9 +232,16 @@ archDraw.init = function(system) {
     body.innerHTML = `
         <table>
             <tr>
-                <td>
-                    Expand Groups:<br/>
+                <td class="sidebar">
+                    <h2>Expand Groups</h2>
                     <div id="expander"></div>
+
+                    <h2>Legend</h2>
+                    <ul>
+                        <li>Dashed shapes: groups</li>
+                        <li>Solid shapes: services</li>
+                        <li>Arrows: connections (not necessarily data flow)</li>
+                    </ul>
                 </td>
                 <td><svg id="graphContainer"></svg></td>
             </tr>

@@ -53,8 +53,5 @@ window.onload = function() {
 
 # TODO
 
-- Legend.
 - Add optional shape. I want this for dbs.
 - Look into adding shape/indicator that something has many boxen.
-- Add a maintainer prop.
-- Maybe a 3rd level of nesting for libraries libraries (could use record based graphviz nodes)

@@ -2,6 +2,24 @@ td {
   vertical-align: top;
 }
 
+.sidebar {
+    min-width: 10em;
+}
+
+h2 {
+    font-size: 1.1em;
+    margin-top: 2em;
+}
+
+.sidebar ul {
+    padding-left: 0;
+    list-style: none;
+}
+
+.sidebar li {
+    margin-bottom: 0.5em;
+}
+
 g.edge path:hover {
   stroke: blue;
   stroke-width: 3;
