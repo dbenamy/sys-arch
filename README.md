@@ -43,7 +43,7 @@ bg work:
 
 `;
 window.onload = function() {
-    archDraw.init(jsyaml.load(SYSTEM_YAML));
+    archDraw.init(jsyaml.load(SYSTEM_YAML), 'https://example.com/url-where-this-file-can-be-edited');
 };
 
 </script>

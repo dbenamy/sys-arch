@@ -227,7 +227,7 @@ archDraw.getParameterByName = function(name) {
     return decodeURIComponent(results[2].replace(/\+/g, " "));
 };
 
-archDraw.init = function(system) {
+archDraw.init = function(system, editUrl) {
     var body = document.createElement('body');
     body.innerHTML = `
         <table>
@@ -242,6 +242,9 @@ archDraw.init = function(system) {
                         <li>Solid shapes: services</li>
                         <li>Arrows: connections (not necessarily data flow)</li>
                     </ul>
+
+                    <h2>Edit This</h2>
+                    <a href="${editUrl}">Here!</a> It's super easy.
                 </td>
                 <td><svg id="graphContainer"></svg></td>
             </tr>
