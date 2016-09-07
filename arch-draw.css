@@ -2,23 +2,7 @@ td {
   vertical-align: top;
 }
 
-div#expander {
-    width:
-}
-
-svg {
-  overflow: hidden;
-}
-.node rect {
-  stroke: #333;
-  stroke-width: 1.5px;
-  fill: #fff;
-}
-.edgeLabel rect {
-  fill: #fff;
-}
-.edgePath {
-  stroke: #333;
-  stroke-width: 1.5px;
-  fill: none;
+g.edge path:hover {
+  stroke: blue;
+  stroke-width: 3;
 }

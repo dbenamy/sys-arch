@@ -167,7 +167,7 @@ archDraw.draw = function(system, expandedGroups) {
     var dot = archDraw.makeDot(graph);
     console.log(dot);
 
-    var svgHtml = Viz(dot, {format: 'svg'}); //, engine: 'neato'});
+    var svgHtml = Viz(dot, {format: 'svg'});
     var svgEl = document.getElementById("graphContainer")
     svgEl.innerHTML = svgHtml;
 

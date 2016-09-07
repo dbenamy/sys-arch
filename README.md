@@ -49,8 +49,6 @@ window.onload = function() {
 
 # TODO
 
-- Look into separating arrows.
-- Highlight arrows on hover.
 - Add optional label field which is shown instead of name if given. i want to keep name to make connections easier.
 - Add optional shape. I want this for dbs.
 - Look into adding shape/indicator that something has many boxen.
