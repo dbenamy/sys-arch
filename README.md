@@ -20,10 +20,10 @@ web:
   - app
 - name: app
   connectsTo:
+  # connections always refer to services, even if there's a group with the same name
   - postgres
   - redis
 
-# for single-service groups it might make sense to name the group after the service
 postgres:
 - name: postgres
   # you can add an optional description
@@ -33,13 +33,13 @@ postgres:
 
 bg work:
 - name: redis
-- name: bg worker
+- name: worker
   connectsTo:
   # a connection can be a 2 item list where the 2nd item is the reason for the connection
-  - [redis, to pop work from a queue]
-- name: bg scheduler
+  - [redis, pops work from a queue]
+- name: scheduler
   connectsTo:
-  - [redis, to enueue periodic work]
+  - [redis, enqueues periodic work]
 
 `;
 window.onload = function() {
