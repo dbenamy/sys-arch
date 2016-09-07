@@ -3,6 +3,22 @@ window.archDraw = {};
 archDraw.expandedGroups = {};
 
 archDraw.buildGraph = function(system, expandedGroups) {
+    // `system` looks like:
+    // {
+    //     web: [
+    //         {
+    //             name: 'app',
+    //             connectsTo: [
+    //                 {
+    //                     svc: 'db',
+    //                     reason: 'user storage'
+    //                 }
+    //             ]
+    //         }
+    //     ]
+    // }
+    console.log(system);
+
     // Deep clone system so this doesn't modify original
     system = JSON.parse(JSON.stringify(system));
 
@@ -18,72 +34,83 @@ archDraw.buildGraph = function(system, expandedGroups) {
     });
     console.log(groupByHiddenSvc);
 
-    // Update link dests
+    // Update connections to svcs in collapsed groups
     groups.forEach(function(group) {
         system[group].forEach(function(svc) {
             var newConnectsTo = {};
-            if (svc.connectsTo !== undefined) {
-                svc.connectsTo.forEach(function(dst) {
-                    var newTarget = groupByHiddenSvc[dst];
-                    if (newTarget) {
-                        newConnectsTo[newTarget] = true;
-                    } else {
-                        newConnectsTo[dst] = true;
-                    }
-                });
-            }
-            svc.connectsTo = Object.keys(newConnectsTo);
+            svc.connectsTo.forEach(function(dst) {
+                var newDst = groupByHiddenSvc[dst.svc] || dst.svc;
+                if (newDst !== group) {
+                    newConnectsTo[newDst] = newConnectsTo[newDst] || [];
+                    newConnectsTo[newDst].push(dst.reason)
+                }
+            });
+            svc.connectsTo = [];
+            Object.keys(newConnectsTo).forEach(function(dstSvc) {
+                var reason = newConnectsTo[dstSvc].join(' ');
+                svc.connectsTo.push({svc: dstSvc, reason: reason});
+            });
         });
     });
     console.log(system);
 
-    var graph = {};
-    // for (var i = 0; i < system.length; i++) {
-        // var svc = system[i];
+    // Make a slightly different data structure
+    var nodes = [];
     groups.forEach(function(group) {
-        system[group].forEach(function(svc) {
-            if (!expandedGroups[group]) { // collapsed / zoomed out
-                if (!graph[group]) {
-                    graph[group] = {
-                        expanded: false,
-                        title: group,
-                        body: svc.name,
-                        connectsTo: {}
-                    };
-                } else {
-                    graph[group].body += ('\n' + svc.name);
-                }
+        nodes.push({
+            expanded: !!expandedGroups[group],
+            title: group,
+            body: '',
+            services: system[group]
+        });
+    });
+
+    // Collapse appropriate groups
+    nodes.forEach(function(node) {
+        if (!node.expanded) {
+            var grpConnTo = {};
+            node.services.forEach(function(svc) {
+                node.body += (svc.name + '\n');
                 svc.connectsTo.forEach(function(dst) {
-                    // Filter out self links
-                    if (dst !== group) {
-                        graph[group].connectsTo[dst] = true;
-                    }
+                    grpConnTo[dst.svc] = grpConnTo[dst.svc] || [];
+                    grpConnTo[dst.svc].push(dst.reason);
                 });
-            } else { // expanded group
-                if (!graph[group]) {
-                    graph[group] = {
-                        expanded: true,
-                        title: group,
-                        body: '',
-                        services: [svc]
+            });
+            node.connectsTo = [];
+            Object.keys(grpConnTo).forEach(function(dstSvc) {
+                node.connectsTo.push({
+                    svc: dstSvc,
+                    reason: grpConnTo[dstSvc].join(' ')
+                });
+            });
+        }
+    });
+
+    return nodes;
+};
+
+archDraw.normalizeConnections = function(system) {
+    Object.keys(system).forEach(function(group) {
+        system[group].forEach(function(svc) {
+            if (svc.connectsTo === undefined) {
+                svc.connectsTo = [];
+            }
+            for (var i = 0; i < svc.connectsTo.length; i++) {
+                if (svc.connectsTo[i] instanceof Array) {
+                    svc.connectsTo[i] = {
+                        svc: svc.connectsTo[i][0],
+                        reason: svc.connectsTo[i][1]
                     };
                 } else {
-                    graph[group].services.push(svc);
+                    svc.connectsTo[i] = {
+                        svc: svc.connectsTo[i],
+                        reason: ''
+                    };
                 }
             }
         });
     });
-    console.log(graph);
-
-    var list = Object.keys(graph).map(function(k) {return graph[k]});
-    list.forEach(function(comp) {
-        if (!comp.expanded) {
-            comp.connectsTo = Object.keys(comp.connectsTo).map(function(k) {return k;});
-        }
-    });
-
-    return list;
-};
+}
 
 archDraw.makeDot = function(graph) {
     // shapes i might want: box, box3d (for multiple), oval, cylinder
@@ -116,15 +143,17 @@ archDraw.makeDot = function(graph) {
             comp.services.forEach(function(svc) {
                 svc.connectsTo.forEach(function(dst) {
                     var nodeName = svc.name.replace(/[^\w]/gi, '_');
-                    var dstName = dst.replace(/[^\w]/gi, '_');
-                    dot += nodeName + ' -> ' + dstName + ';\n';
+                    var dstName = dst.svc.replace(/[^\w]/gi, '_');
+                    // TODO escape " in reason
+                    dot += nodeName + ' -> ' + dstName + ' [label="' + dst.reason + '"];\n';
                 });
             });
         } else { // collapsed/zoomed out
             var nodeName = comp.title.replace(/[^\w]/gi, '_');
             comp.connectsTo.forEach(function(dst) {
-                var dstName = dst.replace(/[^\w]/gi, '_');
-                dot += nodeName + ' -> ' + dstName + ';\n';
+                var dstName = dst.svc.replace(/[^\w]/gi, '_');
+                // TODO escape " in reason
+                dot += nodeName + ' -> ' + dstName + ' [label="' + dst.reason + '"];\n';
             });
         }
     });
@@ -145,6 +174,26 @@ archDraw.draw = function(system, expandedGroups) {
     var bbox = svgEl.getBBox();
     svgEl.style.width = bbox.width + 40.0 + "px";
     svgEl.style.height = bbox.height + 40.0 + "px";
+};
+
+archDraw.wrap = function(str) {
+    var BATCH = 3;
+    var words = str.split(' ');
+    var lines = [];
+    for (var i = 0; i < words.length; i += BATCH) {
+        lines.push(words.slice(i, i + BATCH).join(' '));
+    }
+    return lines.join('\n');
+};
+
+archDraw.wrapReasons = function(system) {
+    Object.keys(system).forEach(function(group) {
+        system[group].forEach(function(svc) {
+            svc.connectsTo.forEach(function(dst) {
+                dst.reason = archDraw.wrap(dst.reason);
+            });
+        });
+    });
 };
 
 // From https://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript
@@ -176,6 +225,10 @@ archDraw.init = function(system) {
     Object.keys(system).forEach(function(group) {
         archDraw.expandedGroups[group] = (expand == 'true' || expand == group);
     });
+
+    archDraw.normalizeConnections(system);
+    archDraw.wrapReasons(system);
+    console.log(system);
 
     archDraw.draw(system, archDraw.expandedGroups);
 

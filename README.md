@@ -31,10 +31,11 @@ bg work:
 - name: redis
 - name: bg worker
   connectsTo:
-  - redis
+  # a connection can be a 2 item list where the 2nd item is the reason for the connection
+  - [redis, to pop work from a queue]
 - name: bg scheduler
   connectsTo:
-  - redis
+  - [redis, to enueue periodic work]
 
 `;
 window.onload = function() {
