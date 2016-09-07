@@ -6,3 +6,7 @@ g.edge path:hover {
   stroke: blue;
   stroke-width: 3;
 }
+
+g a {
+    fill: blue;
+}

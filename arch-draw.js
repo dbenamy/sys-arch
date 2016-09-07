@@ -1,6 +1,7 @@
 window.archDraw = {};
 
 archDraw.expandedGroups = {};
+archDraw.urlsByService = {};
 
 archDraw.buildGraph = function(system, expandedGroups) {
     // `system` looks like:
@@ -70,7 +71,12 @@ archDraw.buildGraph = function(system, expandedGroups) {
         if (!node.expanded) {
             var grpConnTo = {};
             node.services.forEach(function(svc) {
-                node.body += (svc.name + '\n');
+                node.body += svc.name;
+                if (svc.description) {
+                    node.body += ': ' + svc.description;
+                }
+                node.body += '\n';
+
                 svc.connectsTo.forEach(function(dst) {
                     grpConnTo[dst.svc] = grpConnTo[dst.svc] || [];
                     grpConnTo[dst.svc].push(dst.reason);
@@ -126,6 +132,10 @@ archDraw.makeDot = function(graph) {
             dot += 'graph[style=dashed];\n'
             comp.services.forEach(function(svc) {
                 var nodeName = svc.name.replace(/[^\w]/gi, '_');
+                var label = svc.name;
+                if (svc.description) {
+                    label += ': ' + svc.description;
+                }
                 // TODO escape " in svc.name
                 dot += nodeName + '[label="' + svc.name + '"];\n';
             });
@@ -174,6 +184,17 @@ archDraw.draw = function(system, expandedGroups) {
     var bbox = svgEl.getBBox();
     svgEl.style.width = bbox.width + 40.0 + "px";
     svgEl.style.height = bbox.height + 40.0 + "px";
+
+    // Linkify services
+    document.querySelectorAll('g.node text').forEach(function(el) {
+        var url = archDraw.urlsByService[el.textContent];
+        if (url) {
+            var a = document.createElementNS('http://www.w3.org/2000/svg', 'a');
+            el.parentNode.replaceChild(a, el);
+            a.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', url)
+            a.appendChild(el);
+        }
+    });
 };
 
 archDraw.wrap = function(str) {
@@ -224,6 +245,18 @@ archDraw.init = function(system) {
     var expand = archDraw.getParameterByName('expand');
     Object.keys(system).forEach(function(group) {
         archDraw.expandedGroups[group] = (expand == 'true' || expand == group);
+    });
+
+    Object.keys(system).forEach(function(group) {
+        system[group].forEach(function(svc) {
+            if (svc.url) {
+                var label = svc.name;
+                if (svc.description) {
+                    label += ': ' + svc.description;
+                }
+                archDraw.urlsByService[label] = svc.url;
+            }
+        });
     });
 
     archDraw.normalizeConnections(system);

@@ -26,6 +26,10 @@ web:
 # for single-service groups it might make sense to name the group after the service
 postgres:
 - name: postgres
+  # you can add an optional description
+  description: leader + hot standby
+  # and an optional url for more info
+  url: https://my.wiki.com/postgres
 
 bg work:
 - name: redis
@@ -49,7 +53,7 @@ window.onload = function() {
 
 # TODO
 
-- Add optional label field which is shown instead of name if given. i want to keep name to make connections easier.
+- Legend.
 - Add optional shape. I want this for dbs.
 - Look into adding shape/indicator that something has many boxen.
 - Add a maintainer prop.
