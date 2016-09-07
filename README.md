@@ -5,9 +5,9 @@ Create an index.html like:
 ```html
 <!DOCTYPE html>
 <html>
-<link rel="stylesheet" type="text/css" href="arch-draw.css">
 <script src="viz.js"></script>
 <script src="js-yaml.min.js"></script>
+<link rel="stylesheet" type="text/css" href="arch-draw.css">
 <script src="arch-draw.js"></script>
 <script type="text/javascript">
 var SYSTEM_YAML = `
@@ -50,6 +50,11 @@ window.onload = function() {
 </html>
 
 ```
+
+# Thanks
+
+1. https://github.com/mdaines/viz.js
+1. https://github.com/nodeca/js-yaml
 
 # TODO
 
